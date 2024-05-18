@@ -1,0 +1,15 @@
+
+### 200
+GET http://localhost:8080?cep=89216310
+Host: localhost:8080
+Accept: application/json
+
+### 404
+GET http://localhost:8080?cep=89216369
+Host: localhost:8080
+Accept: application/json
+
+### 422
+GET http://localhost:8080?cep=892169
+Host: localhost:8080
+Accept: application/json
