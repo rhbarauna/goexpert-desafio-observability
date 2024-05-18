@@ -8,6 +8,7 @@ import (
 )
 
 type ForecastOutputDTO struct {
+	City  string  `json:"city"`
 	TempC float64 `json:"temp_c"`
 	TempF float64 `json:"temp_f"`
 	TempK float64 `json:"temp_k"`
@@ -35,6 +36,7 @@ func (uc *GetForecast) Execute(cep string) (ForecastOutputDTO, error) {
 		return outputDTO, errors.New("Erro ao obter previsão do tempo.")
 	}
 
+	outputDTO.City = forecast.City
 	outputDTO.TempC = forecast.TempC
 	outputDTO.TempF = forecast.TempF
 	outputDTO.TempK = forecast.TempK
