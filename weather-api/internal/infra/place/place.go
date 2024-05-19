@@ -1,7 +1,11 @@
 package place
 
-import "github.com/rhbarauna/goexpert-desafio-cloud-run/internal/entity"
+import (
+	"context"
+
+	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/entity"
+)
 
 type PlaceProviderInterface interface {
-	GetByCep(cep string) (entity.Place, error)
+	GetByCep(cep string, ctx context.Context) (entity.Place, error)
 }

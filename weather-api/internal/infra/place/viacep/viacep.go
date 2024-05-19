@@ -1,6 +1,7 @@
 package viacep
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -36,8 +37,8 @@ func NewViaCep() *ViaCep {
 	}
 }
 
-func (v *ViaCep) GetByCep(cep string) (entity.Place, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://viacep.com.br/ws/%s/json/", cep), nil)
+func (v *ViaCep) GetByCep(cep string, ctx context.Context) (entity.Place, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://viacep.com.br/ws/%s/json/", cep), nil)
 	place := entity.Place{}
 
 	if err != nil {

@@ -1,6 +1,7 @@
 package weatherapi
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -49,9 +50,9 @@ func NewWeatherAPI(config *configs.Config) *WeatherApi {
 	}
 }
 
-func (w *WeatherApi) GetWeather(city string) (entity.Weather, error) {
+func (w *WeatherApi) GetWeather(city string, ctx context.Context) (entity.Weather, error) {
 	req_str := fmt.Sprintf("http://api.weatherapi.com/v1/current.json?key=%s&q=%s&aqi=no", w.token, url.QueryEscape(city))
-	req, err := http.NewRequest(http.MethodGet, req_str, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, req_str, nil)
 	weather := entity.Weather{}
 
 	if err != nil {

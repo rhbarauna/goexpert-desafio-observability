@@ -1,11 +1,13 @@
 package usecase
 
 import (
+	"context"
 	"errors"
 
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/entity"
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/infra/place"
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/infra/weather"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -37,6 +39,10 @@ func NewGetPlaceForecastUseCase(placeProvider place.PlaceProviderInterface, weat
 }
 
 func (uc *GetPlaceForecast) Execute(cep string) (PlaceForecastOutputDTO, error) {
+	ctx, span := uc.tracer.Start(context.Background(), "Normalizing Postal Code")
+	span.SetAttributes(attribute.String("cep", cep))
+	defer span.End()
+
 	normalized, err := entity.NormalizePostalCode(cep)
 	outputDTO := PlaceForecastOutputDTO{}
 
@@ -44,13 +50,21 @@ func (uc *GetPlaceForecast) Execute(cep string) (PlaceForecastOutputDTO, error) 
 		return outputDTO, ErrInvalidInput
 	}
 
-	placeDetails, err := uc.placeProvider.GetByCep(normalized)
+	ctx, span = uc.tracer.Start(context.Background(), "Requesting cep place details")
+	span.SetAttributes(attribute.String("cep", normalized))
+	defer span.End()
+
+	placeDetails, err := uc.placeProvider.GetByCep(normalized, ctx)
 
 	if err != nil || placeDetails.IsValid() != nil {
 		return outputDTO, ErrPostalCodeNotFound
 	}
 
-	forecast, err := uc.weatherProvider.GetWeather(placeDetails.City)
+	ctx, span = uc.tracer.Start(context.Background(), "Requesting city forecast")
+	span.SetAttributes(attribute.String("city", placeDetails.City))
+	defer span.End()
+
+	forecast, err := uc.weatherProvider.GetWeather(placeDetails.City, ctx)
 
 	if err != nil {
 		return outputDTO, ErrWeatherNotFound

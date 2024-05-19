@@ -15,14 +15,14 @@ type GetPlaceForecastSuite struct {
 	usecase.GetPlaceForecast
 	mockPlaceProvider   *mocks.PlaceProviderMock
 	mockWeatherProvider *mocks.WeatherProviderMock
-	mockTracer          *mocks.TracerMock
+	mockTracer          *mocks.MockTracer
 }
 
 func (suite *GetPlaceForecastSuite) SetupTest() {
 	suite.mockPlaceProvider = new(mocks.PlaceProviderMock)
 	suite.mockWeatherProvider = new(mocks.WeatherProviderMock)
-	suite.mockTracer = new(mocks.TracerMock)
-	suite.GetPlaceForecast = usecase.NewGetPlaceForecastUseCase(suite.mockPlaceProvider, suite.mockWeatherProvider, suite.mockTracer)
+	suite.mockTracer = new(mocks.MockTracer)
+	suite.GetPlaceForecast = usecase.NewGetPlaceForecastUseCase(suite.mockPlaceProvider, suite.mockWeatherProvider, nil)
 
 }
 

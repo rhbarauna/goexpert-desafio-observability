@@ -1,6 +1,8 @@
 package mocks
 
 import (
+	context "context"
+
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/entity"
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/infra/weather"
 	"github.com/stretchr/testify/mock"
@@ -16,7 +18,7 @@ func NewWeatherProviderMock() *WeatherProviderMock {
 	return &WeatherProviderMock{}
 }
 
-func (lm *WeatherProviderMock) GetWeather(city string) (entity.Weather, error) {
+func (lm *WeatherProviderMock) GetWeather(city string, ctx context.Context) (entity.Weather, error) {
 	args := lm.Called(city)
 	return args.Get(0).(entity.Weather), args.Error(1)
 }
