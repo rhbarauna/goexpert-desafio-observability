@@ -9,7 +9,9 @@ import (
 	"net/http"
 	"pos-graduacao/desafios/observabilidade/input/internal/entity"
 
+	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -26,7 +28,7 @@ func NewWeatherApi(tracer trace.Tracer) *WeatherApi {
 }
 
 func (wp *WeatherApi) GetForecast(cep string, ctx context.Context) (entity.Forecast, error) {
-	ctx, span := wp.tracer.Start(ctx, "request_forecast_from_weather_api")
+	ctx, span := wp.tracer.Start(ctx, "call_weather_api")
 	span.SetAttributes(attribute.String("cep", cep))
 	defer span.End()
 
@@ -38,6 +40,7 @@ func (wp *WeatherApi) GetForecast(cep string, ctx context.Context) (entity.Forec
 		return forecast, err
 	}
 
+	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
 	resp, err := wp.httpClient.Do(req)
 
 	if err != nil {

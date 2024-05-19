@@ -38,8 +38,8 @@ func NewGetPlaceForecastUseCase(placeProvider place.PlaceProviderInterface, weat
 	}
 }
 
-func (uc *GetPlaceForecast) Execute(cep string) (PlaceForecastOutputDTO, error) {
-	ctx, span := uc.tracer.Start(context.Background(), "Normalizing Postal Code")
+func (uc *GetPlaceForecast) Execute(cep string, ctx context.Context) (PlaceForecastOutputDTO, error) {
+	ctx, span := uc.tracer.Start(ctx, "Normalizing Postal Code")
 	span.SetAttributes(attribute.String("cep", cep))
 	defer span.End()
 
@@ -50,7 +50,7 @@ func (uc *GetPlaceForecast) Execute(cep string) (PlaceForecastOutputDTO, error) 
 		return outputDTO, ErrInvalidInput
 	}
 
-	ctx, span = uc.tracer.Start(context.Background(), "Requesting cep place details")
+	ctx, span = uc.tracer.Start(ctx, "Requesting cep place details")
 	span.SetAttributes(attribute.String("cep", normalized))
 	defer span.End()
 
@@ -60,7 +60,7 @@ func (uc *GetPlaceForecast) Execute(cep string) (PlaceForecastOutputDTO, error) 
 		return outputDTO, ErrPostalCodeNotFound
 	}
 
-	ctx, span = uc.tracer.Start(context.Background(), "Requesting city forecast")
+	ctx, span = uc.tracer.Start(ctx, "Requesting city forecast")
 	span.SetAttributes(attribute.String("city", placeDetails.City))
 	defer span.End()
 

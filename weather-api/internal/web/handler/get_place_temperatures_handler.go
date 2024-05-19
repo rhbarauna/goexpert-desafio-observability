@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/usecase"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 type GetPlaceTemperaturesHandler struct {
@@ -18,8 +20,11 @@ func NewGetPlaceTemperaturesHandler(uc usecase.GetPlaceForecast) GetPlaceTempera
 }
 
 func (h *GetPlaceTemperaturesHandler) Handle(w http.ResponseWriter, r *http.Request) {
+	carrier := propagation.HeaderCarrier(r.Header)
+	ctx := otel.GetTextMapPropagator().Extract(r.Context(), carrier)
+
 	cep := r.URL.Query().Get("cep")
-	output, err := h.uc.Execute(cep)
+	output, err := h.uc.Execute(cep, ctx)
 
 	if err != nil {
 		if err == usecase.ErrInvalidInput {

@@ -7,6 +7,7 @@ import (
 	"pos-graduacao/desafios/observabilidade/input/internal/entity"
 	"pos-graduacao/desafios/observabilidade/input/internal/infra/forecast"
 
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -27,6 +28,10 @@ func NewGetForecastUseCase(forecastProvider forecast.ForecastProviderInterface, 
 }
 
 func (uc *GetForecast) Execute(cep string, ctx context.Context) (ForecastOutputDTO, error) {
+	ctx, span := uc.tracer.Start(ctx, "Normalizing Postal Code")
+	span.SetAttributes(attribute.String("cep", cep))
+	defer span.End()
+
 	normalized, err := entity.NormalizePostalCode(cep)
 	outputDTO := ForecastOutputDTO{}
 

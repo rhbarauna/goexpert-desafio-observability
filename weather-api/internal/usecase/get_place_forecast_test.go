@@ -1,6 +1,7 @@
 package usecase_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/entity"
@@ -30,7 +31,7 @@ func (suite *GetPlaceForecastSuite) TestGetPlaceForecast_Execute_Success() {
 	suite.mockPlaceProvider.On("GetByCep", "12345678").Return(entity.Place{City: "New York"}, nil)
 	suite.mockWeatherProvider.On("GetWeather", "New York").Return(entity.Weather{TempC: 20}, nil)
 
-	outputDTO, err := suite.GetPlaceForecast.Execute("12345678")
+	outputDTO, err := suite.GetPlaceForecast.Execute("12345678", context.Background())
 
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 20.0, outputDTO.TempC)
@@ -42,7 +43,7 @@ func (suite *GetPlaceForecastSuite) TestGetPlaceForecast_Execute_Success() {
 }
 
 func (suite *GetPlaceForecastSuite) TestGetPlaceForecast_Execute_InvalidPostalCode() {
-	outputDTO, err := suite.GetPlaceForecast.Execute("invalid-cep")
+	outputDTO, err := suite.GetPlaceForecast.Execute("invalid-cep", context.Background())
 
 	assert.EqualError(suite.T(), err, usecase.ErrInvalidInput.Error())
 	assert.Empty(suite.T(), outputDTO)
@@ -54,7 +55,7 @@ func (suite *GetPlaceForecastSuite) TestGetPlaceForecast_Execute_InvalidPostalCo
 func (suite *GetPlaceForecastSuite) TestGetPlaceForecast_Execute_PostalCodeNotFound() {
 	suite.mockPlaceProvider.On("GetByCep", "12345678").Return(entity.Place{}, usecase.ErrPostalCodeNotFound)
 
-	outputDTO, err := suite.GetPlaceForecast.Execute("12345678")
+	outputDTO, err := suite.GetPlaceForecast.Execute("12345678", context.Background())
 
 	assert.EqualError(suite.T(), err, usecase.ErrPostalCodeNotFound.Error())
 	assert.Empty(suite.T(), outputDTO)
@@ -67,7 +68,7 @@ func (suite *GetPlaceForecastSuite) TestGetPlaceForecast_Execute_WeatherNotFound
 	suite.mockPlaceProvider.On("GetByCep", "12345678").Return(entity.Place{City: "New York"}, nil)
 	suite.mockWeatherProvider.On("GetWeather", "New York").Return(entity.Weather{}, usecase.ErrWeatherNotFound)
 
-	outputDTO, err := suite.GetPlaceForecast.Execute("12345678")
+	outputDTO, err := suite.GetPlaceForecast.Execute("12345678", context.Background())
 
 	assert.EqualError(suite.T(), err, usecase.ErrWeatherNotFound.Error())
 	assert.Empty(suite.T(), outputDTO)
