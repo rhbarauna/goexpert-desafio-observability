@@ -7,4 +7,10 @@ services:
       - '8080:8080'
     volumes:
       - .:/app
+    depends_on:
+      - zipkin
     command: go run cmd/main.go cmd/wire_gen.go
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - '9411:9411'

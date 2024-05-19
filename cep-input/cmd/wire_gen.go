@@ -8,8 +8,11 @@ package main
 
 import (
 	"github.com/google/wire"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 	"pos-graduacao/desafios/observabilidade/input/internal/infra/forecast"
 	"pos-graduacao/desafios/observabilidade/input/internal/infra/forecast/weather"
+	"pos-graduacao/desafios/observabilidade/input/internal/infra/tracing"
 	"pos-graduacao/desafios/observabilidade/input/internal/usecase"
 	"pos-graduacao/desafios/observabilidade/input/internal/web/handler"
 )
@@ -17,8 +20,9 @@ import (
 // Injectors from wire.go:
 
 func provideGetForecastUC() usecase.GetForecast {
-	weatherApi := weather.NewWeatherApi()
-	getForecast := usecase.NewGetForecastUseCase(weatherApi)
+	tracer := NewAppTracer()
+	weatherApi := weather.NewWeatherApi(tracer)
+	getForecast := usecase.NewGetForecastUseCase(weatherApi, tracer)
 	return getForecast
 }
 
@@ -29,5 +33,15 @@ func NewCepForecastHandler() handler.GetCepForecastHandler {
 }
 
 // wire.go:
+
+func NewAppTracer() trace.Tracer {
+	return otel.Tracer("cep-input")
+}
+
+func NewTracing(url, serviceName string) func() {
+	return tracing.InitializeTracer(url, serviceName)
+}
+
+var setTraceProvider = wire.NewSet(NewAppTracer)
 
 var setForecastProviderInterface = wire.NewSet(weather.NewWeatherApi, wire.Bind(new(forecast.ForecastProviderInterface), new(*weather.WeatherApi)))

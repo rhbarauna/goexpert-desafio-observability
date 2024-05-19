@@ -1,10 +1,13 @@
 package usecase
 
 import (
+	"context"
 	"errors"
 
 	"pos-graduacao/desafios/observabilidade/input/internal/entity"
 	"pos-graduacao/desafios/observabilidade/input/internal/infra/forecast"
+
+	"go.opentelemetry.io/otel/trace"
 )
 
 type ForecastOutputDTO struct {
@@ -16,13 +19,14 @@ type ForecastOutputDTO struct {
 
 type GetForecast struct {
 	forecastProvider forecast.ForecastProviderInterface
+	tracer           trace.Tracer
 }
 
-func NewGetForecastUseCase(forecastProvider forecast.ForecastProviderInterface) GetForecast {
-	return GetForecast{forecastProvider}
+func NewGetForecastUseCase(forecastProvider forecast.ForecastProviderInterface, tracer trace.Tracer) GetForecast {
+	return GetForecast{forecastProvider, tracer}
 }
 
-func (uc *GetForecast) Execute(cep string) (ForecastOutputDTO, error) {
+func (uc *GetForecast) Execute(cep string, ctx context.Context) (ForecastOutputDTO, error) {
 	normalized, err := entity.NormalizePostalCode(cep)
 	outputDTO := ForecastOutputDTO{}
 
@@ -30,7 +34,7 @@ func (uc *GetForecast) Execute(cep string) (ForecastOutputDTO, error) {
 		return outputDTO, err
 	}
 
-	forecast, err := uc.forecastProvider.GetForecast(normalized)
+	forecast, err := uc.forecastProvider.GetForecast(normalized, ctx)
 
 	if err != nil {
 		return outputDTO, errors.New("Erro ao obter previsão do tempo.")

@@ -6,6 +6,7 @@ import (
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/entity"
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/infra/place"
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/infra/weather"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var (
@@ -24,12 +25,14 @@ type PlaceForecastOutputDTO struct {
 type GetPlaceForecast struct {
 	placeProvider   place.PlaceProviderInterface
 	weatherProvider weather.WeatherProviderInterface
+	tracer          trace.Tracer
 }
 
-func NewGetPlaceForecastUseCase(placeProvider place.PlaceProviderInterface, weatherProvider weather.WeatherProviderInterface) GetPlaceForecast {
+func NewGetPlaceForecastUseCase(placeProvider place.PlaceProviderInterface, weatherProvider weather.WeatherProviderInterface, tracer trace.Tracer) GetPlaceForecast {
 	return GetPlaceForecast{
 		placeProvider:   placeProvider,
 		weatherProvider: weatherProvider,
+		tracer:          tracer,
 	}
 }
 

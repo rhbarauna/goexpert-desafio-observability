@@ -20,7 +20,7 @@ func NewCepForecastHandler(uc usecase.GetForecast) GetCepForecastHandler {
 
 func (h *GetCepForecastHandler) Handle(w http.ResponseWriter, r *http.Request) {
 	cep := r.URL.Query().Get("cep")
-	output, err := h.uc.Execute(cep)
+	output, err := h.uc.Execute(cep, r.Context())
 
 	if err != nil {
 		if err == entity.ErrInvalidInputType || err == entity.ErrInvalidInputMinLength {

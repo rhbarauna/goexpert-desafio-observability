@@ -1,26 +1,36 @@
 package weather
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"pos-graduacao/desafios/observabilidade/input/internal/entity"
+
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type WeatherApi struct {
 	httpClient http.Client
+	tracer     trace.Tracer
 }
 
-func NewWeatherApi() *WeatherApi {
+func NewWeatherApi(tracer trace.Tracer) *WeatherApi {
 	return &WeatherApi{
 		httpClient: http.Client{},
+		tracer:     tracer,
 	}
 }
 
-func (fp *WeatherApi) GetForecast(cep string) (entity.Forecast, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://weather-api:8080?cep=%s", cep), nil)
+func (wp *WeatherApi) GetForecast(cep string, ctx context.Context) (entity.Forecast, error) {
+	ctx, span := wp.tracer.Start(ctx, "request_forecast_from_weather_api")
+	span.SetAttributes(attribute.String("cep", cep))
+	defer span.End()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("http://weather-api:8080?cep=%s", cep), nil)
 	forecast := entity.Forecast{}
 
 	if err != nil {
@@ -28,7 +38,7 @@ func (fp *WeatherApi) GetForecast(cep string) (entity.Forecast, error) {
 		return forecast, err
 	}
 
-	resp, err := fp.httpClient.Do(req)
+	resp, err := wp.httpClient.Do(req)
 
 	if err != nil {
 		log.Printf("Falha ao executar a requisição ao serviço de forecast. %s\n", err.Error())

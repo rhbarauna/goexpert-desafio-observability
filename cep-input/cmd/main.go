@@ -9,6 +9,9 @@ import (
 )
 
 func main() {
+	shutdown := NewTracing("http://zipkin:9411/api/v2/spans", "cep-input")
+	defer shutdown()
+
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)

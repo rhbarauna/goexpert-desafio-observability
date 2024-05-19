@@ -11,10 +11,14 @@ import (
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/configs"
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/infra/place"
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/infra/place/viacep"
+	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/infra/tracing"
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/infra/weather"
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/infra/weather/weatherapi"
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/usecase"
 	"github.com/rhbarauna/goexpert-desafio-cloud-run/internal/web/handler"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func provideConfig() *configs.Config {
@@ -31,19 +35,30 @@ func provideConfig() *configs.Config {
 	return config
 }
 
+func NewAppTracer() trace.Tracer {
+	return otel.Tracer("weather-api")
+}
+
+func NewTracing(url, serviceName string) func() {
+	return tracing.InitializeTracer(url, serviceName)
+}
+
+var setTraceProvider = wire.NewSet(NewAppTracer)
+
 var setPlaceProviderInterface = wire.NewSet(
 	viacep.NewViaCep,
 	wire.Bind(new(place.PlaceProviderInterface), new(*viacep.ViaCep)),
 )
 
 var setWeatherProviderInterface = wire.NewSet(
-	provideConfig,
 	weatherapi.NewWeatherAPI,
 	wire.Bind(new(weather.WeatherProviderInterface), new(*weatherapi.WeatherApi)),
 )
 
 func provideGetPlaceForecastUC() usecase.GetPlaceForecast {
 	wire.Build(
+		provideConfig,
+		setTraceProvider,
 		setPlaceProviderInterface,
 		setWeatherProviderInterface,
 		usecase.NewGetPlaceForecastUseCase,
