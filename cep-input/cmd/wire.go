@@ -4,11 +4,14 @@
 package main
 
 import (
+	"path/filepath"
+	"pos-graduacao/desafios/observabilidade/input/configs"
 	"pos-graduacao/desafios/observabilidade/input/internal/infra/forecast"
 	"pos-graduacao/desafios/observabilidade/input/internal/infra/forecast/weather"
 	"pos-graduacao/desafios/observabilidade/input/internal/infra/tracing"
 	"pos-graduacao/desafios/observabilidade/input/internal/usecase"
 	"pos-graduacao/desafios/observabilidade/input/internal/web/handler"
+	"runtime"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
@@ -16,12 +19,30 @@ import (
 	"github.com/google/wire"
 )
 
-func NewAppTracer() trace.Tracer {
-	return otel.Tracer("cep-input")
+func provideConfig() *configs.Config {
+	_, currentFile, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("Erro ao obter informações do arquivo.")
+	}
+	goDir := filepath.Dir(currentFile)
+
+	config, err := configs.LoadConfig(goDir)
+	if err != nil {
+		panic(err)
+	}
+	return config
 }
 
-func NewTracing(url, serviceName string) func() {
-	return tracing.InitializeTracer(url, serviceName)
+func NewAppTracer(config *configs.Config) trace.Tracer {
+	return otel.Tracer(config.SERVICE_NAME)
+}
+
+func NewTracing() func() {
+	wire.Build(
+		provideConfig,
+		tracing.InitializeTracer,
+	)
+	return func() {}
 }
 
 var setTraceProvider = wire.NewSet(NewAppTracer)
@@ -33,6 +54,7 @@ var setForecastProviderInterface = wire.NewSet(
 
 func provideGetForecastUC() usecase.GetForecast {
 	wire.Build(
+		provideConfig,
 		setTraceProvider,
 		setForecastProviderInterface,
 		usecase.NewGetForecastUseCase,

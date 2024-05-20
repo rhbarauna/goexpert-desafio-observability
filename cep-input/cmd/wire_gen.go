@@ -10,17 +10,27 @@ import (
 	"github.com/google/wire"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
+	"path/filepath"
+	"pos-graduacao/desafios/observabilidade/input/configs"
 	"pos-graduacao/desafios/observabilidade/input/internal/infra/forecast"
 	"pos-graduacao/desafios/observabilidade/input/internal/infra/forecast/weather"
 	"pos-graduacao/desafios/observabilidade/input/internal/infra/tracing"
 	"pos-graduacao/desafios/observabilidade/input/internal/usecase"
 	"pos-graduacao/desafios/observabilidade/input/internal/web/handler"
+	"runtime"
 )
 
 // Injectors from wire.go:
 
+func NewTracing() func() {
+	config := provideConfig()
+	v := tracing.InitializeTracer(config)
+	return v
+}
+
 func provideGetForecastUC() usecase.GetForecast {
-	tracer := NewAppTracer()
+	config := provideConfig()
+	tracer := NewAppTracer(config)
 	weatherApi := weather.NewWeatherApi(tracer)
 	getForecast := usecase.NewGetForecastUseCase(weatherApi, tracer)
 	return getForecast
@@ -34,12 +44,22 @@ func NewCepForecastHandler() handler.GetCepForecastHandler {
 
 // wire.go:
 
-func NewAppTracer() trace.Tracer {
-	return otel.Tracer("cep-input")
+func provideConfig() *configs.Config {
+	_, currentFile, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("Erro ao obter informações do arquivo.")
+	}
+	goDir := filepath.Dir(currentFile)
+
+	config, err := configs.LoadConfig(goDir)
+	if err != nil {
+		panic(err)
+	}
+	return config
 }
 
-func NewTracing(url, serviceName string) func() {
-	return tracing.InitializeTracer(url, serviceName)
+func NewAppTracer(config *configs.Config) trace.Tracer {
+	return otel.Tracer(config.SERVICE_NAME)
 }
 
 var setTraceProvider = wire.NewSet(NewAppTracer)

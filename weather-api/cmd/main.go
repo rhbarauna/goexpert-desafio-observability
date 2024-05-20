@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	shutdown := NewTracing("http://zipkin:9411/api/v2/spans", "weather-api")
+	shutdown := NewTracing()
 	defer shutdown()
 
 	router := chi.NewRouter()

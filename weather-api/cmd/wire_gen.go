@@ -24,11 +24,17 @@ import (
 
 // Injectors from wire.go:
 
+func NewTracing() func() {
+	config := provideConfig()
+	v := tracing.InitializeTracer(config)
+	return v
+}
+
 func provideGetPlaceForecastUC() usecase.GetPlaceForecast {
 	viaCep := viacep.NewViaCep()
 	config := provideConfig()
 	weatherApi := weatherapi.NewWeatherAPI(config)
-	tracer := NewAppTracer()
+	tracer := NewAppTracer(config)
 	getPlaceForecast := usecase.NewGetPlaceForecastUseCase(viaCep, weatherApi, tracer)
 	return getPlaceForecast
 }
@@ -55,12 +61,8 @@ func provideConfig() *configs.Config {
 	return config
 }
 
-func NewAppTracer() trace.Tracer {
-	return otel.Tracer("weather-api")
-}
-
-func NewTracing(url, serviceName string) func() {
-	return tracing.InitializeTracer(url, serviceName)
+func NewAppTracer(config *configs.Config) trace.Tracer {
+	return otel.Tracer(config.SERVICE_NAME)
 }
 
 var setTraceProvider = wire.NewSet(NewAppTracer)

@@ -7,7 +7,7 @@ import (
 )
 
 type Config struct {
-	WEATHER_API_KEY string `mapstructure:"WEATHER_API_KEY"`
+	WEATHER_API_URL string `mapstructure:"WEATHER_API_URL"`
 	TRACER_URL      string `mapstructure:"TRACER_URL"`
 	SERVICE_NAME    string `mapstructure:"SERVICE_NAME"`
 }

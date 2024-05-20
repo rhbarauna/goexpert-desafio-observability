@@ -3,6 +3,7 @@ package tracing
 import (
 	"context"
 	"log"
+	"pos-graduacao/desafios/observabilidade/input/configs"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/zipkin"
@@ -12,8 +13,8 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
-func InitializeTracer(url, serviceName string) func() {
-	exporter, err := zipkin.New(url)
+func InitializeTracer(config *configs.Config) func() {
+	exporter, err := zipkin.New(config.TRACER_URL)
 	if err != nil {
 		log.Fatalf("failed to create zipkin exporter: %v", err)
 	}
@@ -23,7 +24,7 @@ func InitializeTracer(url, serviceName string) func() {
 		sdktrace.WithResource(
 			resource.NewWithAttributes(
 				semconv.SchemaURL,
-				semconv.ServiceNameKey.String(serviceName),
+				semconv.ServiceNameKey.String(config.SERVICE_NAME),
 			),
 		),
 	)

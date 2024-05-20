@@ -35,12 +35,16 @@ func provideConfig() *configs.Config {
 	return config
 }
 
-func NewAppTracer() trace.Tracer {
-	return otel.Tracer("weather-api")
+func NewAppTracer(config *configs.Config) trace.Tracer {
+	return otel.Tracer(config.SERVICE_NAME)
 }
 
-func NewTracing(url, serviceName string) func() {
-	return tracing.InitializeTracer(url, serviceName)
+func NewTracing() func() {
+	wire.Build(
+		provideConfig,
+		tracing.InitializeTracer,
+	)
+	return func() {}
 }
 
 var setTraceProvider = wire.NewSet(NewAppTracer)
