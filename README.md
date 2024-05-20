@@ -19,8 +19,8 @@ Cep-input and Weather-api services can be customized through the .env file prese
 
 ## Building the project's image
 
-**Important: Set weather-api environment variables in /weather-api/cmd/.env before running the project.**
-**Important: Set cep-input environment variables in /cep-input/cmd/.env before running the project.**
+**_Important: Set weather-api environment variables in /weather-api/cmd/.env before running the project._**
+**_Important: Set cep-input environment variables in /cep-input/cmd/.env before running the project._**
 
 ### Production
 
