@@ -21,12 +21,14 @@ Access https://github.com/rhbarauna/goexpert-desafio-cloud-run for more informat
 
 ## **Important: Set weather-api environment variables in /weather-api/cmd/.env before running the project.**
 
+## **Important: Set cep-input environment variables in /cep-input/cmd/.env before running the project.**
+
 ### Production
 
 A docker image ready for production can be built by running
 
 ```bash
-make build-prod IMAGE_NAME=your_image_name # if empty. weather-api-image:latest will be the default value
+make build-prod CEP_IMAGE_NAME=your_cep_image_name WEATHER_IMAGE_NAME=your_weather_image # if empty. observability-cep-input-image:latest and observability-weather-api-image:latest will be the default values
 ```
 
 ### Development
@@ -56,28 +58,12 @@ curl -X GET http://localhost:8080?cep=89216369
 
 curl -X GET http://localhost:8080?cep=892169
 
-### Cloud run
-
-The system is deployed on Google Cloud Run and can be accessed at `https://goexpert-cloudrun-weather-api-pwvfjx4fpq-rj.a.run.app`
-
-#### 200
-
-curl -X GET https://goexpert-cloudrun-weather-api-pwvfjx4fpq-rj.a.run.app?cep=89216310
-
-#### 404
-
-curl -X GET https://goexpert-cloudrun-weather-api-pwvfjx4fpq-rj.a.run.app?cep=89216369
-
-#### 422
-
-curl -X GET https://goexpert-cloudrun-weather-api-pwvfjx4fpq-rj.a.run.app?cep=892169
-
 #### Responses
 
 - In case of success:
 
   - HTTP Code: 200
-  - Response Body: `{ "temp_C": 28.5, "temp_F": 28.5, "temp_K": 28.5 }`
+  - Response Body: `{ "city":"Joinville" ,"temp_C": 28.5, "temp_F": 28.5, "temp_K": 28.5 }`
 
 - In case of failure, if the ZIP code is not valid (with correct format):
 
