@@ -14,14 +14,13 @@ The system is built using the following technologies:
 
 ### Customizables
 
-The weather-api service can be customized.
-Access https://github.com/rhbarauna/goexpert-desafio-cloud-run for more informations.
+Cep-input and Weather-api services can be customized through the .env file present in each directory:
+/cep-input/cmd/.env and /weather-api/cmd/.env
 
 ## Building the project's image
 
-## **Important: Set weather-api environment variables in /weather-api/cmd/.env before running the project.**
-
-## **Important: Set cep-input environment variables in /cep-input/cmd/.env before running the project.**
+**Important: Set weather-api environment variables in /weather-api/cmd/.env before running the project.**
+**Important: Set cep-input environment variables in /cep-input/cmd/.env before running the project.**
 
 ### Production
 
