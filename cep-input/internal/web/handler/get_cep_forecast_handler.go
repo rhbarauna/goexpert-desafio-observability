@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"pos-graduacao/desafios/observabilidade/input/internal/entity"
+	"pos-graduacao/desafios/observabilidade/input/internal/infra/forecast"
 	"pos-graduacao/desafios/observabilidade/input/internal/usecase"
 )
 
@@ -28,8 +29,10 @@ func (h *GetCepForecastHandler) Handle(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		if err == forecast.ErrZipCodeNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
 	}
 
 	err = json.NewEncoder(w).Encode(output)

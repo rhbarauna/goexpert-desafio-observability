@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 
 	"pos-graduacao/desafios/observabilidade/input/internal/entity"
 	"pos-graduacao/desafios/observabilidade/input/internal/infra/forecast"
@@ -42,7 +41,7 @@ func (uc *GetForecast) Execute(cep string, ctx context.Context) (ForecastOutputD
 	forecast, err := uc.forecastProvider.GetForecast(normalized, ctx)
 
 	if err != nil {
-		return outputDTO, errors.New("Erro ao obter previsão do tempo.")
+		return outputDTO, err
 	}
 
 	outputDTO.City = forecast.City

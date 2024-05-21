@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"pos-graduacao/desafios/observabilidade/input/internal/entity"
+	forecastProvider "pos-graduacao/desafios/observabilidade/input/internal/infra/forecast"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -48,6 +49,10 @@ func (wp *WeatherApi) GetForecast(cep string, ctx context.Context) (entity.Forec
 		return forecast, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return forecast, forecastProvider.ErrZipCodeNotFound
+	}
 
 	if resp.StatusCode != http.StatusOK {
 		log.Println("Erro na resposta da API:", resp.Status)
